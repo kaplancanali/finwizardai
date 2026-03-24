@@ -5,17 +5,45 @@ import type {
   MarketLeaderboardResponse,
 } from '../types';
 
-/** Yerelde Vite proxy; Vercel'de VITE_API_URL ile tam backend adresi verin (örn. https://xxx.railway.app/api/v1) */
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '/api/v1';
+function trimBase(url: string): string {
+  return url.replace(/\/$/, '');
+}
+
+/** Build-time (Vite); boşsa /api/v1, sonra initApiFromRuntimeConfig ile api-config.json güncelleyebilir */
+const viteApi = import.meta.env.VITE_API_URL?.trim();
+const initialBase = viteApi ? trimBase(viteApi) : '/api/v1';
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: initialBase,
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 30000,
 });
+
+/** Şu an kullanılan taban (axios ile aynı) — hata mesajları için */
+export function getEffectiveApiBase(): string {
+  return trimBase(String(apiClient.defaults.baseURL || '/api/v1'));
+}
+
+/**
+ * VITE_API_URL yoksa /api-config.json okur (public/ → kök URL).
+ * Backend adresini buraya yazıp yeniden deploy edin; Vercel env şart değil.
+ */
+export async function initApiFromRuntimeConfig(): Promise<void> {
+  if (viteApi) return;
+  try {
+    const res = await fetch('/api-config.json', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = (await res.json()) as { apiBase?: string };
+    const b = data.apiBase?.trim();
+    if (b) {
+      apiClient.defaults.baseURL = trimBase(b);
+    }
+  } catch {
+    /* ağ veya JSON yok — varsayılan /api/v1 */
+  }
+}
 
 export const riskApi = {
   async analyzeStock(symbol: string): Promise<RiskAnalysisResponse> {

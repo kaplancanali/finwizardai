@@ -236,7 +236,12 @@ git push                      # origin/main’e gönder
 
 Kök dizinde yalnızca `frontend/` Vite projesi olduğu için Vercel’de **Root Directory** boş bırakılırsa build üretilmez ve **404 NOT_FOUND** görülür. Repoda kök `vercel.json` bu yolu ayarlar; yine de Vercel’de **Redeploy** yapın.
 
-Canlı sitede API çağrıları için Vercel proje ayarlarına **Environment Variable** ekleyin: `VITE_API_URL` = backend’in tam tabanı (örn. `https://api.example.com/api/v1`, sonda `/` olmasın). Backend’i ayrıca (Railway, Render, Fly vb.) yayınlamanız gerekir; Vercel statik frontend `/api` sunmaz.
+Canlı sitede API çağrıları için backend’i ayrı yayınlayın (Railway, Render, Fly vb.); Vercel statik frontend `/api` sunmaz.
+
+**API adresini verme (ikisinden biri):**
+
+1. `frontend/public/api-config.json` içinde `"apiBase": "https://senin-backend.com/api/v1"` (sonda `/` yok) yazıp commit + deploy — `VITE_API_URL` şart değil.
+2. Veya host panelinde `VITE_API_URL` ile aynı tabanı build ortamına verip yeniden derleyin.
 
 ## Geliştirme
 
