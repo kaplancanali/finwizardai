@@ -232,6 +232,23 @@ git push                      # origin/main’e gönder
 
 `nothing to commit, working tree clean` görürsen: commit edilecek yeni değişiklik yok demektir; önce dosyalarda düzenleme yap.
 
+### Tek sunucu (API + arayüz aynı origin)
+
+Üretimde FastAPI hem REST hem derlenmiş React’i aynı porttan sunabilir; `financewizardry.com` gibi tek domain yeter, `VITE_API_URL` gerekmez.
+
+```bash
+cd frontend && npm ci && npm run build
+cd ../backend
+# .env veya ortam değişkeni:
+export SERVE_SPA=true
+# API_DEBUG=false önerilir
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+- `SERVE_SPA=true` iken statik dosyalar `frontend/dist` içinden okunur (yol: repo kökü `frontend/dist`, veya `FRONTEND_DIST_DIR` ile özelleştirin).
+- Arayüz `import.meta.env` ile göreli `/api/v1` kullanır; aynı hostta çalışır.
+- Yerel geliştirmede genelde `SERVE_SPA=false` bırakın; Vite `npm run dev` (3000) + uvicorn (8000) ayrı kalır.
+
 ### Vercel (finwizardai.vercel.app 404)
 
 Kök dizinde yalnızca `frontend/` Vite projesi olduğu için Vercel’de **Root Directory** boş bırakılırsa build üretilmez ve **404 NOT_FOUND** görülür. Repoda kök `vercel.json` bu yolu ayarlar; yine de Vercel’de **Redeploy** yapın.

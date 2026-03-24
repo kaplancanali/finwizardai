@@ -26,10 +26,14 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 - GET /api/v1/stocks - List available stocks
 - GET /api/v1/health - Health check
 """
-from fastapi import FastAPI, Request
+from pathlib import Path
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 import time
 
 from utils.config import get_settings
@@ -81,27 +85,67 @@ app.include_router(risk_router)
 app.include_router(market_router)
 
 
-@app.get("/")
-async def root():
-    """
-    Root endpoint with API information.
-    
-    Returns:
-        Basic API information
-    """
-    return {
-        "name": "FinVis - Financial Risk Analysis API",
-        "version": settings.API_VERSION,
-        "description": "AI-powered financial risk analysis for BIST30 companies",
-        "endpoints": {
-            "docs": "/docs",
-            "redoc": "/redoc",
-            "health": "/api/v1/health",
-            "stocks": "/api/v1/stocks",
-            "risk_analysis": "/api/v1/risk/{stock_symbol}"
-        },
-        "example": "/api/v1/risk/THYAO"
-    }
+def _frontend_dist_path() -> Optional[Path]:
+    """Vite build çıktısı (frontend/dist); SERVE_SPA kapalıysa None."""
+    if not settings.SERVE_SPA:
+        return None
+    backend_dir = Path(__file__).resolve().parent
+    repo_root = backend_dir.parent
+    raw = (settings.FRONTEND_DIST_DIR or "").strip()
+    if raw:
+        p = Path(raw).expanduser()
+        dist = p if p.is_absolute() else (repo_root / p)
+    else:
+        dist = repo_root / "frontend" / "dist"
+    return dist if dist.is_dir() else None
+
+
+_frontend_dist = _frontend_dist_path()
+if _frontend_dist is not None:
+    _assets = _frontend_dist / "assets"
+    if _assets.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(_assets)), name="spa_assets")
+
+    @app.get("/")
+    async def spa_root():
+        index = _frontend_dist / "index.html"
+        if not index.is_file():
+            raise HTTPException(status_code=503, detail="index.html missing in frontend dist")
+        return FileResponse(index)
+
+    @app.get("/{spa_path:path}")
+    async def spa_fallback(spa_path: str):
+        """Statik dosya veya SPA (React router yoksa yine index). /api*, /docs vb. router’larda."""
+        target = _frontend_dist / spa_path
+        try:
+            target = target.resolve()
+            target.relative_to(_frontend_dist.resolve())
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Invalid path")
+        if target.is_file():
+            return FileResponse(target)
+        index = _frontend_dist / "index.html"
+        if index.is_file():
+            return FileResponse(index)
+        raise HTTPException(status_code=503, detail="SPA index missing")
+else:
+
+    @app.get("/")
+    async def root():
+        """API kök bilgisi (SERVE_SPA kapalı veya dist yokken)."""
+        return {
+            "name": "FinVis - Financial Risk Analysis API",
+            "version": settings.API_VERSION,
+            "description": "AI-powered financial risk analysis for BIST30 companies",
+            "endpoints": {
+                "docs": "/docs",
+                "redoc": "/redoc",
+                "health": "/api/v1/health",
+                "stocks": "/api/v1/stocks",
+                "risk_analysis": "/api/v1/risk/{stock_symbol}",
+            },
+            "example": "/api/v1/risk/THYAO",
+        }
 
 
 @app.get("/health")
@@ -148,6 +192,14 @@ async def startup_event():
     logger.info(f"Starting {settings.API_TITLE} v{settings.API_VERSION}")
     logger.info(f"Debug mode: {settings.API_DEBUG}")
     logger.info(f"Host: {settings.HOST}:{settings.PORT}")
+    if settings.SERVE_SPA:
+        if _frontend_dist is not None:
+            logger.info("SERVE_SPA: serving UI from %s", _frontend_dist)
+        else:
+            logger.warning(
+                "SERVE_SPA=true ancak frontend/dist bulunamadı; kök / JSON API bilgisi. "
+                "Önce: cd frontend && npm run build"
+            )
     logger.info("=" * 50)
     
     # Log available endpoints

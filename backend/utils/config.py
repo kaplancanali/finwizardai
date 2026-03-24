@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # Server Settings
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    # True: aynı uvicorn sürecinde frontend/dist (Vite build) sunulur; /api/v1 ile tek origin
+    SERVE_SPA: bool = False
+    # Boşsa: repo kökünden ../frontend/dist (backend klasörünün bir üstü)
+    FRONTEND_DIST_DIR: str = ""
     
     # NLP Model Settings
     SENTIMENT_MODEL: str = "savasy/bert-base-turkish-cased-sentiment"
