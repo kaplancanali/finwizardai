@@ -4,9 +4,9 @@ import { getEffectiveApiBase } from '../services/api';
 const PROD_MISSING_API_HINT =
   'API sunucusuna ulaşılamıyor. Statik sitede /api/v1 yolu yok; FastAPI backend ayrı çalışmalı.\n\n' +
   'Çözüm (birini yapın):\n' +
-  '1) frontend/public/api-config.json içinde "apiBase" alanına backend adresini yazın, örn. "https://xxx.railway.app/api/v1" (sonda / olmasın), commit + deploy.\n' +
-  '2) Veya host panelinde VITE_API_URL ile aynı adresi build ortamına verip yeniden derleyin.\n' +
-  '3) Veya aynı domainde /api isteğini reverse proxy ile backend’e yönlendirin.';
+  '• Vercel + ayrı backend: Proje kökündeki api/[...path].js proxy kullanır. Vercel → Settings → Environment Variables → FINVIS_BACKEND_URL = https://senin-fastapi.up.railway.app (sadece origin, sonda / yok). Redeploy.\n' +
+  '• Tek sunucu: backend’de SERVE_SPA=true, nginx/Caddy ile tek porta yönlendirin (README).\n' +
+  '• Veya frontend/public/api-config.json içinde "apiBase": "https://.../api/v1" veya build’de VITE_API_URL.';
 
 export function formatApiError(err: unknown): string {
   if (axios.isAxiosError(err)) {

@@ -249,6 +249,18 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 - Arayüz `import.meta.env` ile göreli `/api/v1` kullanır; aynı hostta çalışır.
 - Yerel geliştirmede genelde `SERVE_SPA=false` bırakın; Vite `npm run dev` (3000) + uvicorn (8000) ayrı kalır.
 
+### Vercel + ayrı FastAPI (financewizardry.com / finwizardai)
+
+Statik frontend Vercel’de, API Railway/Render’da ise kökteki **`api/[...path].js`** istekleri proxy’ler.
+
+1. FastAPI’yi yayınlayın; örn. `https://finvis-api.up.railway.app` (sadece kök URL).
+2. Vercel proje **Environment Variables**: `FINVIS_BACKEND_URL` = aynı adres (`https://finvis-api.up.railway.app`, sonda `/` yok).
+3. **Redeploy** (env sonradan eklendiyse zorunlu).
+
+Tarayıcı `https://siteniz.com/api/v1/...` çağırır → Vercel fonksiyonu → `FINVIS_BACKEND_URL/api/v1/...`.
+
+Not: Uzun risk analizi Vercel Hobby **10 sn** sınırını aşabilir; gerekirse Pro veya `maxDuration` / tek sunucu `SERVE_SPA` kullanın.
+
 ### Vercel (finwizardai.vercel.app 404)
 
 Kök dizinde yalnızca `frontend/` Vite projesi olduğu için Vercel’de **Root Directory** boş bırakılırsa build üretilmez ve **404 NOT_FOUND** görülür. Repoda kök `vercel.json` bu yolu ayarlar; yine de Vercel’de **Redeploy** yapın.
