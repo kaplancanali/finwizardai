@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Loader2, RefreshCcw, X } from 'lucide-react';
 
 import { riskApi } from '../services/api';
+import { formatApiError } from '../utils/apiError';
 import type { MarketLeaderboardItem, RiskAnalysisResponse, RiskLevel } from '../types';
 import { RISK_LEVEL_CONFIG } from '../types';
 import RiskAnalysisDetailView from './RiskAnalysisDetailView';
@@ -46,7 +47,7 @@ const MarketLeaderboard: React.FC = () => {
       });
       setItems(data.items);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Piyasa analizi alınamadı');
+      setError(formatApiError(e));
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ const MarketLeaderboard: React.FC = () => {
       const analysis = await riskApi.analyzeStock(item.symbol);
       setDetailData(analysis);
     } catch (e) {
-      setDetailError(e instanceof Error ? e.message : 'Detay yüklenemedi');
+      setDetailError(formatApiError(e));
     } finally {
       setDetailLoading(false);
     }
@@ -134,7 +135,9 @@ const MarketLeaderboard: React.FC = () => {
         </select>
       </div>
 
-      {error && <div className="p-3 rounded bg-red-50 text-red-600 mb-3">{error}</div>}
+      {error && (
+        <div className="p-3 rounded bg-red-50 text-red-600 mb-3 text-sm whitespace-pre-wrap break-words">{error}</div>
+      )}
 
       <div className="overflow-auto">
         <table className="w-full text-sm">

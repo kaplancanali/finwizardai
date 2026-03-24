@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { riskApi } from '../services/api';
+import { formatApiError } from '../utils/apiError';
 import type { RiskAnalysisResponse } from '../types';
 
 interface UseRiskAnalysisReturn {
@@ -23,8 +24,7 @@ export const useRiskAnalysis = (): UseRiskAnalysisReturn => {
       const response = await riskApi.analyzeStock(symbol);
       setData(response);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Analiz sırasında bir hata oluştu';
-      setError(errorMessage);
+      setError(formatApiError(err));
       setData(null);
     } finally {
       setIsLoading(false);

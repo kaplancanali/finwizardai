@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { riskApi } from '../services/api';
+import { formatApiError } from '../utils/apiError';
 import type { BISTStock } from '../types';
 
 interface UseStocksReturn {
@@ -22,8 +23,7 @@ export const useStocks = (): UseStocksReturn => {
       const response = await riskApi.getAvailableStocks();
       setStocks(response.stocks);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Hisse listesi yüklenemedi';
-      setError(errorMessage);
+      setError(formatApiError(err));
     } finally {
       setIsLoading(false);
     }
