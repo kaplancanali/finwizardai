@@ -217,6 +217,21 @@ SENTIMENT_WEIGHT=0.2
 CACHE_TTL_SECONDS=300
 ```
 
+## Git ve GitHub
+
+Uzak repo: [kaplancanali/finwizardai](https://github.com/kaplancanali/finwizardai)
+
+Değişiklikleri kaydetmek ve GitHub’a göndermek:
+
+```bash
+git status                    # ne değişti
+git add -A                    # tümünü sahneye al
+git commit -m "Kısa açıklama" # yerel commit
+git push                      # origin/main’e gönder
+```
+
+`nothing to commit, working tree clean` görürsen: commit edilecek yeni değişiklik yok demektir; önce dosyalarda düzenleme yap.
+
 ## Geliştirme
 
 ### Backend Testleri
