@@ -232,6 +232,12 @@ git push                      # origin/main’e gönder
 
 `nothing to commit, working tree clean` görürsen: commit edilecek yeni değişiklik yok demektir; önce dosyalarda düzenleme yap.
 
+### Vercel (finwizardai.vercel.app 404)
+
+Kök dizinde yalnızca `frontend/` Vite projesi olduğu için Vercel’de **Root Directory** boş bırakılırsa build üretilmez ve **404 NOT_FOUND** görülür. Repoda kök `vercel.json` bu yolu ayarlar; yine de Vercel’de **Redeploy** yapın.
+
+Canlı sitede API çağrıları için Vercel proje ayarlarına **Environment Variable** ekleyin: `VITE_API_URL` = backend’in tam tabanı (örn. `https://api.example.com/api/v1`, sonda `/` olmasın). Backend’i ayrıca (Railway, Render, Fly vb.) yayınlamanız gerekir; Vercel statik frontend `/api` sunmaz.
+
 ## Geliştirme
 
 ### Backend Testleri

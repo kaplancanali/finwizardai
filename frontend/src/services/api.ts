@@ -5,7 +5,9 @@ import type {
   MarketLeaderboardResponse,
 } from '../types';
 
-const API_BASE_URL = '/api/v1';
+/** Yerelde Vite proxy; Vercel'de VITE_API_URL ile tam backend adresi verin (örn. https://xxx.railway.app/api/v1) */
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
